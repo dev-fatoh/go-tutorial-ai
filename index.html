@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- App shell: main layout container -->
     <main class="app-shell">
       <section class="bank-card">
         <div class="bank-card__header">
@@ -19,6 +20,7 @@
           <strong id="balance">$0.00</strong>
         </div>
 
+        <!-- Transaction form: choose action and enter amount -->
         <form id="transaction-form" class="transaction-form">
           <div class="form-group">
             <label for="action">Transaction</label>
@@ -26,6 +28,7 @@
               <option value="deposit">Deposit</option>
               <option value="withdraw">Withdraw</option>
             </select>
+            <!-- Inline action error (populated by JS) -->
             <p id="action-error" class="field-error" aria-live="polite"></p>
           </div>
 
@@ -41,6 +44,7 @@
               required
               aria-describedby="amount-error"
             />
+            <!-- Inline amount error (populated by JS) -->
             <p id="amount-error" class="field-error" aria-live="polite"></p>
           </div>
 

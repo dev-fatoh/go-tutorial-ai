@@ -3,6 +3,7 @@
   background: #f5f7fb;
   color: #122033;
 }
+/* Core layout variables and colors are defined above. */
 
 * {
   box-sizing: border-box;
@@ -71,6 +72,7 @@ body {
   display: grid;
   gap: 0.5rem;
 }
+/* Form input error state and inline error text styling */
 
 label {
   font-weight: 600;

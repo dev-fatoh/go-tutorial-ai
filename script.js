@@ -1,7 +1,10 @@
+// DOM references used throughout the frontend script.
 const balanceEl = document.getElementById("balance");
 const form = document.getElementById("transaction-form");
 const messageEl = document.getElementById("message");
 
+// setFieldError shows or clears an inline error message for a field.
+// It also toggles ARIA attributes and an error CSS class for accessibility.
 function setFieldError(fieldId, text) {
   const errEl = document.getElementById(`${fieldId}-error`);
   const inputEl = document.getElementById(fieldId);
@@ -16,11 +19,13 @@ function setFieldError(fieldId, text) {
   }
 }
 
+// clearFieldErrors removes inline errors from all known fields.
 function clearFieldErrors() {
   setFieldError("amount", "");
   setFieldError("action", "");
 }
 
+// loadBalance fetches the current balance from the API and updates the UI.
 async function loadBalance() {
   try {
     const response = await fetch("/api/balance");
@@ -35,11 +40,13 @@ async function loadBalance() {
   }
 }
 
+// showMessage displays a global status message (success or error).
 function showMessage(text, type) {
   messageEl.textContent = text;
   messageEl.className = `message ${type}`;
 }
 
+// Form submission: validate, call the API, and show errors inline or global.
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -48,6 +55,7 @@ form.addEventListener("submit", async (event) => {
   clearFieldErrors();
 
   if (Number.isNaN(amount) || amount <= 0) {
+    // Client-side validation for positive numbers.
     setFieldError("amount", "Please enter a valid amount.");
     return;
   }
