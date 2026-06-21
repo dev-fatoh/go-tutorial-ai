@@ -18,6 +18,7 @@ type response struct {
 	Balance float64 `json:"balance,omitempty"`
 	Message string  `json:"message,omitempty"`
 	Error   string  `json:"error,omitempty"`
+	Errors  map[string]string `json:"errors,omitempty"`
 }
 
 func main() {
@@ -56,7 +57,7 @@ func handleTransaction(w http.ResponseWriter, r *http.Request) {
 	if req.Amount <= 0 {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(response{Error: "Amount must be greater than zero"})
+		json.NewEncoder(w).Encode(response{Errors: map[string]string{"amount": "Amount must be greater than zero"}, Error: "Validation failed"})
 		return
 	}
 
@@ -72,7 +73,7 @@ func handleTransaction(w http.ResponseWriter, r *http.Request) {
 		if req.Amount > accountBalance {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(response{Error: "Insufficient funds"})
+			json.NewEncoder(w).Encode(response{Errors: map[string]string{"amount": "Insufficient funds"}, Error: "Insufficient funds"})
 			return
 		}
 		accountBalance -= req.Amount
@@ -84,6 +85,6 @@ func handleTransaction(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(response{Error: "Invalid transaction type"})
+		json.NewEncoder(w).Encode(response{Errors: map[string]string{"action": "Invalid transaction type"}, Error: "Invalid transaction type"})
 	}
 }

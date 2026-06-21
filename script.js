@@ -2,6 +2,25 @@ const balanceEl = document.getElementById("balance");
 const form = document.getElementById("transaction-form");
 const messageEl = document.getElementById("message");
 
+function setFieldError(fieldId, text) {
+  const errEl = document.getElementById(`${fieldId}-error`);
+  const inputEl = document.getElementById(fieldId);
+  if (!errEl || !inputEl) return;
+  errEl.textContent = text || "";
+  if (text) {
+    inputEl.classList.add("input-error");
+    inputEl.setAttribute("aria-invalid", "true");
+  } else {
+    inputEl.classList.remove("input-error");
+    inputEl.removeAttribute("aria-invalid");
+  }
+}
+
+function clearFieldErrors() {
+  setFieldError("amount", "");
+  setFieldError("action", "");
+}
+
 async function loadBalance() {
   try {
     const response = await fetch("/api/balance");
@@ -26,9 +45,10 @@ form.addEventListener("submit", async (event) => {
 
   const action = document.getElementById("action").value;
   const amount = parseFloat(document.getElementById("amount").value);
+  clearFieldErrors();
 
   if (Number.isNaN(amount) || amount <= 0) {
-    showMessage("Please enter a valid amount.", "error");
+    setFieldError("amount", "Please enter a valid amount.");
     return;
   }
 
@@ -43,6 +63,12 @@ form.addEventListener("submit", async (event) => {
 
     const data = await response.json();
     if (!response.ok) {
+      // If server returned field-specific errors, display them inline
+      if (data.errors) {
+        Object.keys(data.errors).forEach((field) => {
+          setFieldError(field, data.errors[field]);
+        });
+      }
       throw new Error(data.error || "Transaction failed");
     }
 

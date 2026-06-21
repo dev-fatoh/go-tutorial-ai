@@ -92,6 +92,18 @@ input {
   transition: border-color 0.2s ease;
 }
 
+.input-error {
+  border-color: #b42318;
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.06);
+}
+
+.field-error {
+  color: #b42318;
+  font-weight: 600;
+  font-size: 0.85rem;
+  min-height: 1rem;
+}
+
 select:focus,
 input:focus {
   border-color: #6d78ff;
