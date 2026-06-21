@@ -1,51 +1,61 @@
-# Go Bank CLI
+# Go Bank Web UI
 
-A simple command-line banking program written in Go.
+A small Go application that serves a simple banking dashboard in the browser.
 
 ## Overview
 
-This project demonstrates a basic bank menu where a user can:
+This project now includes:
 
-- check the current balance,
-- deposit money,
-- withdraw money, and
-- exit the program.
-
-The program uses a loop so the menu keeps appearing until the user chooses to exit.
+- a web form for deposits and withdrawals,
+- a styled balance panel,
+- a Go HTTP server that serves the frontend and handles API requests.
 
 ## Features
 
-- Check account balance
-- Deposit money
-- Withdraw money
-- Exit the program
-- Input validation for invalid menu choices and negative amounts
+- View the current account balance
+- Deposit money through a form
+- Withdraw money through a form
+- Handle invalid amounts and insufficient funds with messages
+- Serve the UI and API from the same Go program
+
+## Project Files
+
+- `main.go` - Starts the server and handles `/api/balance` and `/api/transaction`
+- `index.html` - Page layout for the banking form
+- `styles.css` - Styling for the dashboard
+- `script.js` - Frontend logic for loading balance and submitting transactions
 
 ## How to Run
 
-1. Open the project folder.
-2. Make sure Go is installed on your system.
-3. Run the program with:
+1. Make sure Go is installed.
+2. From the project folder, run:
 
    ```bash
-   go run main.go
+   go run .
    ```
 
-## Example Flow
+3. Open your browser and visit:
 
-When you run the program, you will see a menu like this:
+   ```text
+   http://localhost:8080
+   ```
 
-```text
-1. Check balance
-2. Withdraw money
-3. Deposit money
-4. Exit
+## API Endpoints
+
+- `GET /api/balance` - Returns the current balance as JSON
+- `POST /api/transaction` - Accepts a JSON body with `action` and `amount`
+
+Example request body:
+
+```json
+{
+  "action": "deposit",
+  "amount": 50
+}
 ```
-
-If you choose option `3`, the program will ask for the deposit amount. If the amount is valid, the balance is updated and shown on screen.
 
 ## Notes
 
-- The balance starts at `1000.00` when the program begins.
-- The program currently stores the balance only while the program is running.
-- This is a beginner-friendly example for learning Go basics such as loops, conditionals, and user input.
+- The balance starts at `1000.00` when the server starts.
+- The balance is stored in memory while the program is running.
+- This project is a beginner-friendly example of combining Go server code with a simple frontend.

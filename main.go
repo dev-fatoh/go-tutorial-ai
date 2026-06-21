@@ -1,71 +1,89 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+)
+
+var accountBalance = 1000.00
+
+type transactionRequest struct {
+	Action string  `json:"action"`
+	Amount float64 `json:"amount"`
+}
+
+type response struct {
+	Balance float64 `json:"balance,omitempty"`
+	Message string  `json:"message,omitempty"`
+	Error   string  `json:"error,omitempty"`
+}
 
 func main() {
-	// Starting balance for the account.
-	accountBalance := 1000.00
+	http.HandleFunc("/api/balance", handleBalance)
+	http.HandleFunc("/api/transaction", handleTransaction)
+	http.Handle("/", http.FileServer(http.Dir(".")))
 
-	// Keep showing the menu until the user chooses to exit.
-	for {
-		// Display the bank menu options.
-		fmt.Println("\nWelcome to go bank")
-		fmt.Println("What do you want to do?")
-		fmt.Println("1. Check balance")
-		fmt.Println("2. Withdraw money")
-		fmt.Println("3. Deposit money")
-		fmt.Println("4. Exit")
+	fmt.Println("Server running at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
 
-		// Read the user's menu choice.
-		var choice int
-		fmt.Print("Enter choice: ")
-		if _, err := fmt.Scan(&choice); err != nil {
-			fmt.Println("Invalid input")
+func handleBalance(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response{Balance: accountBalance})
+}
+
+func handleTransaction(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req transactionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response{Error: "Invalid request payload"})
+		return
+	}
+
+	if req.Amount <= 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response{Error: "Amount must be greater than zero"})
+		return
+	}
+
+	switch req.Action {
+	case "deposit":
+		accountBalance += req.Amount
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response{
+			Balance: accountBalance,
+			Message: fmt.Sprintf("Deposited $%.2f successfully", req.Amount),
+		})
+	case "withdraw":
+		if req.Amount > accountBalance {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(response{Error: "Insufficient funds"})
 			return
 		}
-
-		// Handle the selected banking action.
-		switch choice {
-		case 1:
-			// Show the current account balance.
-			fmt.Printf("Account balance: %.2f\n", accountBalance)
-		case 2:
-			// Withdraw money from the account.
-			var amt float64
-			fmt.Print("Enter amount to withdraw: ")
-			if _, err := fmt.Scan(&amt); err != nil {
-				fmt.Println("Invalid input")
-				return
-			}
-			if amt <= 0 {
-				fmt.Println("Invalid amount")
-			} else if amt > accountBalance {
-				fmt.Println("Insufficient funds")
-			} else {
-				accountBalance -= amt
-				fmt.Printf("Withdrawn %.2f. New balance: %.2f\n", amt, accountBalance)
-			}
-		case 3:
-			// Deposit money into the account.
-			var amt float64
-			fmt.Print("Enter amount to deposit: ")
-			if _, err := fmt.Scan(&amt); err != nil {
-				fmt.Println("Invalid input")
-				return
-			}
-			if amt <= 0 {
-				fmt.Println("Invalid amount")
-			} else {
-				accountBalance += amt
-				fmt.Printf("Deposited %.2f. New balance: %.2f\n", amt, accountBalance)
-			}
-		case 4:
-			// Exit the program.
-			fmt.Println("Goodbye")
-			return
-		default:
-			// Handle unsupported menu choices.
-			fmt.Println("Invalid choice")
-		}
+		accountBalance -= req.Amount
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response{
+			Balance: accountBalance,
+			Message: fmt.Sprintf("Withdrew $%.2f successfully", req.Amount),
+		})
+	default:
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response{Error: "Invalid transaction type"})
 	}
 }
